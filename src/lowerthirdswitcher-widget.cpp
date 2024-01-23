@@ -12,8 +12,6 @@ int activeItem = 0;
 
 const char *currentSceneCollection = "none";
 
-// int prevDragIndex = -1;
-
 
 LowerthirdswitcherDockWidget::LowerthirdswitcherDockWidget(QWidget *parent)
 	: QDockWidget("Lower Third Switcher", parent), ui(new Ui::LowerThirdSwitcher) {
@@ -242,7 +240,9 @@ void LowerthirdswitcherDockWidget::mainTextEdited(QString newText) {
 	LowerthirdswitcherDockWidget::lowerthirditem item = lowerthirditems[idx];
 	item.mainText = newText;
 	lowerthirditems[idx] = item;
+	int currentCursorPosition = ui->mainTextLineEdit->cursorPosition();
 	LoadItemsToList();
+	ui->mainTextLineEdit->setCursorPosition(currentCursorPosition);
 }
 
 void LowerthirdswitcherDockWidget::secondaryTextEdited(QString newText) {
@@ -250,7 +250,9 @@ void LowerthirdswitcherDockWidget::secondaryTextEdited(QString newText) {
 	LowerthirdswitcherDockWidget::lowerthirditem item = lowerthirditems[idx];
 	item.secondaryText = newText;
 	lowerthirditems[idx] = item;
+	int currentCursorPosition = ui->secondaryTextLineEdit->cursorPosition();
 	LoadItemsToList();
+	ui->secondaryTextLineEdit->setCursorPosition(currentCursorPosition);
 }
 
 

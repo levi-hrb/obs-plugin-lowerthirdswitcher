@@ -59,7 +59,6 @@ private:
 	enum SourceType { TEXT_SOURCE = 1, GROUP_SOURCE = 2, SCENE_SOURCE = 3 };
 	
 	Ui::LowerThirdSwitcher *ui;
-	// obs_data_t *obsSettingsData;
 
 	static void OBSSourceCreated(void *param, calldata_t *calldata);
 	static void OBSSourceDeleted(void *param, calldata_t *calldata);
@@ -96,9 +95,6 @@ private slots:
 
 	void mainTextEdited(QString newText);
 	void secondaryTextEdited(QString newText);
-
-	// void itemsListWidgetItemPressed(QListWidgetItem *item);
-	// void listWidgetDropEvent(QDropEvent *dropEvent);
 
 	void LoadItemsToList();
 
