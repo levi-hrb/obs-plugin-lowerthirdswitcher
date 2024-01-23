@@ -1,7 +1,6 @@
 #ifndef LOWERTHIRDSWITCHERDOCKWIDGET_H
 #define LOWERTHIRDSWITCHERDOCKWIDGET_H
 
-
 #include <string>
 #include <iostream>
 #include <list>
@@ -49,7 +48,7 @@ public:
 	~LowerthirdswitcherDockWidget();
 
 	int nextButtonHotkeyId = -1;
-	
+
 	struct lowerthirditem {
 		QString mainText;
 		QString secondaryText;
@@ -57,24 +56,25 @@ public:
 
 private:
 	enum SourceType { TEXT_SOURCE = 1, GROUP_SOURCE = 2, SCENE_SOURCE = 3 };
-	
+
 	Ui::LowerThirdSwitcher *ui;
 
 	static void OBSSourceCreated(void *param, calldata_t *calldata);
 	static void OBSSourceDeleted(void *param, calldata_t *calldata);
 	static void OBSSourceRenamed(void *param, calldata_t *calldata);
 
-	static void OBSFrontendEventHandler(enum obs_frontend_event event, void *private_data);
+	static void OBSFrontendEventHandler(enum obs_frontend_event event,
+					    void *private_data);
 
 	static int CheckSourceType(obs_source_t *source);
-	static void LoadSavedSettings(Ui::LowerThirdSwitcher *ui, LowerthirdswitcherDockWidget *context);
-
+	static void LoadSavedSettings(Ui::LowerThirdSwitcher *ui,
+				      LowerthirdswitcherDockWidget *context);
 
 private slots:
 	void ConnectObsSignalHandlers();
 	void DisonnectObsSignalHandlers();
 	void ConnectUISignalHandlers();
-	
+
 	void SaveSettings();
 
 	void RegisterHotkeys(LowerthirdswitcherDockWidget *context);
