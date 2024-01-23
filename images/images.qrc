@@ -1,0 +1,9 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>green-icon.png</file>
+    <file>red-icon.png</file>
+    <file>red-flash-icon.png</file>
+    <file>red-flash2-icon.png</file>
+    <file>red-green-transition-icon.png</file>
+</qresource>
+</RCC>
