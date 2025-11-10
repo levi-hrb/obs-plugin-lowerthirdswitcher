@@ -29,7 +29,7 @@ During the stream/recording, you can show the next (active) item by clicking the
 A hotkey can be set up to show the next lower third. This enables many opportunities to control the plugin, e.g. a midi device can be connected and with a plugin like [obs-midi-mg](https://github.com/nhielost/obs-midi-mg/) midi signals can trigger the hotkey, thus the midi device can trigger the next lower third to be shown.
 
 ## Installing
-Go to the [Releases page](https://github.com/levi-hrb/obs-plugin-lowerthirdswitcher/releases) and download and install the latest release for the proper operating system (currently only MacOS, for other systems download the source code and build the plugin). After installing the plugin, you will find it in OBS in the "Docks" menu.
+Go to the [Releases page](https://github.com/levi-hrb/obs-plugin-lowerthirdswitcher/releases) and download and install the latest release for the proper operating system. After installing the plugin, you will find it in OBS in the "Docks" menu.
 
 ## Building from Source
 
