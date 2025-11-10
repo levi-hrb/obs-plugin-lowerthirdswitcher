@@ -12,9 +12,7 @@
 #include <thread>
 #include <stdio.h>
 #include <future>
-#include <unistd.h>
 
-#include <Qt>
 #include <QMainWindow>
 #include <QDockWidget>
 #include <QEvent>
