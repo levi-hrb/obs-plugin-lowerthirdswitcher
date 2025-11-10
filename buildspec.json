@@ -9,6 +9,10 @@
     "macos": {
       "bundleId": "com.leviherber.obs-plugin-lowerthirdswitcher"
     },
+    "macos-universal": {
+      "bundleId": "com.leviherber.obs-plugin-lowerthirdswitcher",
+      "qtVersion": "6"
+    },
     "windows-x64": {
       "qtVersion": "6",
       "visualStudio": "Visual Studio 17 2022",
@@ -22,6 +26,7 @@
     "obs-studio": {
       "version": "31.1.1",
       "repository": "https://github.com/obsproject/obs-studio.git",
+      "branch": "master",
       "hash": "f2c9aff3f89eb03737fb4f72e8b8d3ab3ae95be1",
       "hashes": {
         "macos-universal": "d8a3b8ceb95e4c22eb9c3ce4cad8fc2ad5e8e9e3c5dbd1dc25e7e2c8fda7ae37",
