@@ -656,8 +656,7 @@ void LowerthirdswitcherDockWidget::SaveSettings()
 		obs_data_save_json(
 			obs_data_create(),
 			config_path); // in case the file does not exist, create a empty json file
-	obsSettingsData =
-		obs_data_create_from_json_file(config_path);
+	obsSettingsData = obs_data_create_from_json_file(config_path);
 
 	obs_data_set_int(sceneCollectionData, "displayDuration",
 			 displayDuration);
