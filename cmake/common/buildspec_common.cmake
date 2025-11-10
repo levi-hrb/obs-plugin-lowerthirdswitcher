@@ -22,21 +22,15 @@ function(_check_deps_version version)
         set(found TRUE)
         break()
       elseif(_check_version VERSION_LESS version)
-        message(
-          AUTHOR_WARNING
-          "Older ${label} version detected in ${path}: \n"
-          "Found ${_check_version}, require ${version}"
-        )
+        message(AUTHOR_WARNING "Older ${label} version detected in ${path}: \n"
+                               "Found ${_check_version}, require ${version}")
         list(REMOVE_ITEM CMAKE_PREFIX_PATH "${path}")
         list(APPEND CMAKE_PREFIX_PATH "${path}")
         set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
         continue()
       else()
-        message(
-          AUTHOR_WARNING
-          "Newer ${label} version detected in ${path}: \n"
-          "Found ${_check_version}, require ${version}"
-        )
+        message(AUTHOR_WARNING "Newer ${label} version detected in ${path}: \n"
+                               "Found ${_check_version}, require ${version}")
         set(found TRUE)
         break()
       endif()
@@ -66,53 +60,45 @@ function(_setup_obs_studio)
   execute_process(
     COMMAND
       "${CMAKE_COMMAND}" -S "${dependencies_dir}/${_obs_destination}" -B
-      "${dependencies_dir}/${_obs_destination}/build_${arch}" -G ${_cmake_generator} "${_cmake_arch}"
-      -DOBS_CMAKE_VERSION:STRING=3.0.0 -DENABLE_PLUGINS:BOOL=OFF -DENABLE_FRONTEND:BOOL=OFF
-      -DOBS_VERSION_OVERRIDE:STRING=${_obs_version} "-DCMAKE_PREFIX_PATH='${CMAKE_PREFIX_PATH}'" ${_is_fresh}
-      ${_cmake_extra}
-    RESULT_VARIABLE _process_result
-    COMMAND_ERROR_IS_FATAL ANY
-    OUTPUT_QUIET
-  )
+      "${dependencies_dir}/${_obs_destination}/build_${arch}" -G ${_cmake_generator}
+      "${_cmake_arch}" -DOBS_CMAKE_VERSION:STRING=3.0.0 -DENABLE_PLUGINS:BOOL=OFF
+      -DENABLE_FRONTEND:BOOL=OFF -DOBS_VERSION_OVERRIDE:STRING=${_obs_version}
+      "-DCMAKE_PREFIX_PATH='${CMAKE_PREFIX_PATH}'" ${_is_fresh} ${_cmake_extra}
+    RESULT_VARIABLE _process_result COMMAND_ERROR_IS_FATAL ANY
+    OUTPUT_QUIET)
   message(STATUS "Configure ${label} (${arch}) - done")
 
   message(STATUS "Build ${label} (Debug - ${arch})")
   execute_process(
-    COMMAND "${CMAKE_COMMAND}" --build build_${arch} --target obs-frontend-api --config Debug --parallel
+    COMMAND "${CMAKE_COMMAND}" --build build_${arch} --target obs-frontend-api --config Debug
+            --parallel
     WORKING_DIRECTORY "${dependencies_dir}/${_obs_destination}"
-    RESULT_VARIABLE _process_result
-    COMMAND_ERROR_IS_FATAL ANY
-    OUTPUT_QUIET
-  )
+    RESULT_VARIABLE _process_result COMMAND_ERROR_IS_FATAL ANY
+    OUTPUT_QUIET)
   message(STATUS "Build ${label} (Debug - ${arch}) - done")
 
   message(STATUS "Build ${label} (Release - ${arch})")
   execute_process(
-    COMMAND "${CMAKE_COMMAND}" --build build_${arch} --target obs-frontend-api --config Release --parallel
+    COMMAND "${CMAKE_COMMAND}" --build build_${arch} --target obs-frontend-api --config Release
+            --parallel
     WORKING_DIRECTORY "${dependencies_dir}/${_obs_destination}"
-    RESULT_VARIABLE _process_result
-    COMMAND_ERROR_IS_FATAL ANY
-    OUTPUT_QUIET
-  )
+    RESULT_VARIABLE _process_result COMMAND_ERROR_IS_FATAL ANY
+    OUTPUT_QUIET)
   message(STATUS "Build ${label} (Reelase - ${arch}) - done")
 
   message(STATUS "Install ${label} (${arch})")
   execute_process(
-    COMMAND
-      "${CMAKE_COMMAND}" --install build_${arch} --component Development --config Debug --prefix "${dependencies_dir}"
+    COMMAND "${CMAKE_COMMAND}" --install build_${arch} --component Development --config Debug
+            --prefix "${dependencies_dir}"
     WORKING_DIRECTORY "${dependencies_dir}/${_obs_destination}"
-    RESULT_VARIABLE _process_result
-    COMMAND_ERROR_IS_FATAL ANY
-    OUTPUT_QUIET
-  )
+    RESULT_VARIABLE _process_result COMMAND_ERROR_IS_FATAL ANY
+    OUTPUT_QUIET)
   execute_process(
-    COMMAND
-      "${CMAKE_COMMAND}" --install build_${arch} --component Development --config Release --prefix "${dependencies_dir}"
+    COMMAND "${CMAKE_COMMAND}" --install build_${arch} --component Development --config Release
+            --prefix "${dependencies_dir}"
     WORKING_DIRECTORY "${dependencies_dir}/${_obs_destination}"
-    RESULT_VARIABLE _process_result
-    COMMAND_ERROR_IS_FATAL ANY
-    OUTPUT_QUIET
-  )
+    RESULT_VARIABLE _process_result COMMAND_ERROR_IS_FATAL ANY
+    OUTPUT_QUIET)
   message(STATUS "Install ${label} (${arch}) - done")
 endfunction()
 
@@ -128,7 +114,15 @@ function(_check_dependencies)
     string(JSON hash GET ${data} hashes ${platform})
     string(JSON url GET ${data} baseUrl)
     string(JSON label GET ${data} label)
-    string(JSON revision ERROR_VARIABLE error GET ${data} revision ${platform})
+    string(
+      JSON
+      revision
+      ERROR_VARIABLE
+      error
+      GET
+      ${data}
+      revision
+      ${platform})
 
     message(STATUS "Setting up ${label} (${arch})")
 
@@ -147,11 +141,8 @@ function(_check_dependencies)
     endif()
 
     if(EXISTS "${dependencies_dir}/.dependency_${dependency}_${arch}.sha256")
-      file(
-        READ
-        "${dependencies_dir}/.dependency_${dependency}_${arch}.sha256"
-        OBS_DEPENDENCY_${dependency}_${arch}_HASH
-      )
+      file(READ "${dependencies_dir}/.dependency_${dependency}_${arch}.sha256"
+           OBS_DEPENDENCY_${dependency}_${arch}_HASH)
     endif()
 
     set(skip FALSE)
@@ -178,7 +169,10 @@ function(_check_dependencies)
 
     if(NOT EXISTS "${dependencies_dir}/${file}")
       message(STATUS "Downloading ${url}")
-      file(DOWNLOAD "${url}" "${dependencies_dir}/${file}" STATUS download_status EXPECTED_HASH SHA256=${hash})
+      file(
+        DOWNLOAD "${url}" "${dependencies_dir}/${file}"
+        STATUS download_status
+        EXPECTED_HASH SHA256=${hash})
 
       list(GET download_status 0 error_code)
       list(GET download_status 1 error_message)
@@ -200,7 +194,8 @@ function(_check_dependencies)
       if(dependency STREQUAL obs-studio)
         file(ARCHIVE_EXTRACT INPUT "${dependencies_dir}/${file}" DESTINATION "${dependencies_dir}")
       else()
-        file(ARCHIVE_EXTRACT INPUT "${dependencies_dir}/${file}" DESTINATION "${dependencies_dir}/${destination}")
+        file(ARCHIVE_EXTRACT INPUT "${dependencies_dir}/${file}" DESTINATION
+             "${dependencies_dir}/${destination}")
       endif()
     endif()
 
@@ -221,7 +216,9 @@ function(_check_dependencies)
 
   list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
 
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} CACHE PATH "CMake prefix search path" FORCE)
+  set(CMAKE_PREFIX_PATH
+      ${CMAKE_PREFIX_PATH}
+      CACHE PATH "CMake prefix search path" FORCE)
 
   _setup_obs_studio()
 endfunction()

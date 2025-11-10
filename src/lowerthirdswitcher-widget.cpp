@@ -11,11 +11,10 @@ int activeItem = 0;
 const char *currentSceneCollection = "none";
 
 LowerthirdswitcherDockWidget::LowerthirdswitcherDockWidget(QWidget *parent)
-	: QWidget(parent),
-	  ui(new Ui::LowerThirdSwitcher)
+	: QWidget(parent), ui(new Ui::LowerThirdSwitcher)
 {
 	ui->setupUi(this);
-	
+
 	setMinimumSize(300, 380);
 
 	setCurrentSceneCollection();

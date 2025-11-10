@@ -33,12 +33,13 @@ bool obs_module_load(void)
 	lowerthirdswitcherDockWidget =
 		new LowerthirdswitcherDockWidget(main_window);
 
-	obs_frontend_add_dock_by_id("LowerThirdSwitcherDock", "Lower Third Switcher", 
-				     lowerthirdswitcherDockWidget);
+	obs_frontend_add_dock_by_id("LowerThirdSwitcherDock",
+				    "Lower Third Switcher",
+				    lowerthirdswitcherDockWidget);
 
 	obs_log(LOG_INFO,
-	     "LowerThirdSwitcher plugin loaded successfully (version %s)",
-	     PLUGIN_VERSION);
+		"LowerThirdSwitcher plugin loaded successfully (version %s)",
+		PLUGIN_VERSION);
 	return true;
 }
 
