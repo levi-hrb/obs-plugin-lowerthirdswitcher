@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
@@ -43,7 +43,7 @@ jobs:
 
   macos_build:
     name: 02 - macOS
-    runs-on: macos-12
+    runs-on: macos-13
     strategy:
       fail-fast: true
       matrix:
@@ -61,13 +61,13 @@ jobs:
         shell: zsh {0}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: plugin
           submodules: recursive
 
       - name: Checkout obs-studio
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'obsproject/obs-studio'
           path: obs-studio
@@ -166,7 +166,7 @@ jobs:
 
       - name: Upload Build Artifact
         if: ${{ success() && (github.event_name != 'pull_request' || steps.seekingTesters.outputs.found == 'true') }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PLUGIN_NAME }}-macos-${{ matrix.arch }}-${{ steps.setup.outputs.commitHash }}
           path: ${{ github.workspace }}/plugin/release/${{ env.PLUGIN_NAME }}-*-macos-${{ matrix.arch }}.pkg
@@ -187,13 +187,13 @@ jobs:
         shell: bash
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: plugin
           submodules: recursive
 
       - name: Checkout obs-studio
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'obsproject/obs-studio'
           path: obs-studio
@@ -244,7 +244,7 @@ jobs:
 
       - name: Upload Build Artifact
         if: ${{ success() && (github.event_name != 'pull_request' || steps.seekingTesters.outputs.found == 'true') }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PLUGIN_NAME }}-linux-${{ matrix.arch }}-${{ steps.setup.outputs.commitHash }}
           path: ${{ github.workspace }}/plugin/release/${{ env.PLUGIN_NAME }}-*-linux-${{ matrix.arch }}.*
@@ -265,13 +265,13 @@ jobs:
         shell: pwsh
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: plugin
           submodules: recursive
 
       - name: Checkout obs-studio
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'obsproject/obs-studio'
           path: obs-studio
@@ -324,7 +324,7 @@ jobs:
 
       - name: Upload Build Artifact
         if: ${{ success() && (github.event_name != 'pull_request' || steps.seekingTesters.outputs.found == 'true') }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PLUGIN_NAME }}-windows-${{ matrix.arch }}-${{ steps.setup.outputs.commitHash }}
           path: ${{ github.workspace }}/plugin/release/${{ env.PLUGIN_NAME }}-*.zip
@@ -340,7 +340,7 @@ jobs:
 
       - name: Upload Installer Artifact
         if: ${{ startsWith(github.ref, 'refs/tags/') && github.event_name != 'pull_request' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.PLUGIN_NAME }}-windows-${{ matrix.arch }}-${{ steps.setup.outputs.commitHash }}-installer
           path: ${{ github.workspace }}/plugin/release/${{ env.PLUGIN_NAME }}-*.exe
@@ -361,7 +361,7 @@ jobs:
           echo "version=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Generate Checksums
         run: |
