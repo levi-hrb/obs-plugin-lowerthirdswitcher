@@ -5,6 +5,12 @@ An OBS Plugin to easily display pre-configured lower thirds.
 
 <img width="1440" alt="Screenshot 2024-01-23 at 14 07 45" src="https://github.com/levi-hrb/obs-plugin-lowerthirdswitcher/assets/65330078/7302f64f-dc64-4e1f-94b1-5c18431ab069">
 
+<br>
+Say thanks with a chocolate bar :)<br>
+<a href="https://www.paypal.com/donate/?hosted_button_id=7K3HTSKYHPHWG">
+    <img width="100" src="https://www.paypalobjects.com/webstatic/de_DE/i/de-pp-logo-200px.png" alt="PayPal Button">
+</a>
+
 
 ## Description
 Create an OBS folder that includes a text source for the main text (e.g. names) and one for the secondary subtitle (e.g. titles). The folder can also include any other design elements. 

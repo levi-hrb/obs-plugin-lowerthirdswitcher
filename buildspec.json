@@ -16,9 +16,9 @@
       "baseUrl": "https://github.com/obsproject/obs-studio/archive/refs/tags",
       "label": "OBS sources",
       "hashes": {
-        "macos": "39751f067bacc13d44b116c5138491b5f1391f91516d3d590d874edd21292291",
-        "windows": "39751f067bacc13d44b116c5138491b5f1391f91516d3d590d874edd21292291",
-        "linux": "39751f067bacc13d44b116c5138491b5f1391f91516d3d590d874edd21292291"
+        "macos-universal": "39751f067bacc13d44b116c5138491b5f1391f91516d3d590d874edd21292291",
+        "windows-x64": "39751f067bacc13d44b116c5138491b5f1391f91516d3d590d874edd21292291",
+        "linux-x86_64": "39751f067bacc13d44b116c5138491b5f1391f91516d3d590d874edd21292291"
       }
     },
     "prebuilt": {
@@ -26,8 +26,9 @@
       "baseUrl": "https://github.com/obsproject/obs-deps/releases/download",
       "label": "Pre-Built obs-deps",
       "hashes": {
-        "macos": "495687e63383d1a287684b6e2e9bfe246bb8f156fe265926afb1a325af1edd2a",
-        "windows-x64": "c8c642c1070dc31ce9a0f1e4cef5bb992f4bff4882255788b5da12129e85caa7"
+        "macos-universal": "495687e63383d1a287684b6e2e9bfe246bb8f156fe265926afb1a325af1edd2a",
+        "windows-x64": "c8c642c1070dc31ce9a0f1e4cef5bb992f4bff4882255788b5da12129e85caa7",
+        "linux-x86_64": "481d0419cf1f87d9ea04bfd262b7d47fcf8bd5a7fcede2129e16f2c7ffccdf95"
       }
     },
     "qt6": {
@@ -35,8 +36,9 @@
       "baseUrl": "https://github.com/obsproject/obs-deps/releases/download",
       "label": "Pre-Built Qt6",
       "hashes": {
-        "macos": "d3f5f04b6ea486e032530bdf0187cbda9a54e0a49621a4c8ba984c5023998867",
-        "windows-x64": "0e76bf0555dd5382838850b748d3dcfab44a1e1058441309ab54e1a65b156d0a"
+        "macos-universal": "d3f5f04b6ea486e032530bdf0187cbda9a54e0a49621a4c8ba984c5023998867",
+        "windows-x64": "0e76bf0555dd5382838850b748d3dcfab44a1e1058441309ab54e1a65b156d0a",
+        "linux-x86_64": "cd27305f2b3e85b8c1e1f06ce96cade4f84e2f60f14b97c18b881c95d24c0e69"
       }
     }
   }
