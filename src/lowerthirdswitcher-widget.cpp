@@ -162,7 +162,7 @@ void LowerthirdswitcherDockWidget::nextItem()
 						obs_sceneitem_set_visible(
 							sceneItem, false);
 				}
-			} catch (int i) {
+			} catch (...) {
 			}
 		}};
 		t.detach();
@@ -231,7 +231,7 @@ void LowerthirdswitcherDockWidget::nextItem()
 				ui->itemsListWidget->item(activeItem);
 			if (item)
 				item->setIcon(QIcon(":/green-icon.png"));
-		} catch (int i) {
+		} catch (...) {
 		}
 	}
 }
@@ -651,13 +651,13 @@ void LowerthirdswitcherDockWidget::SaveSettings()
 	obs_data_t *sceneCollectionData = obs_data_create();
 
 	// check if settings file exists, if not create empty. Read it's data
-	if (!(access(obs_module_config_path(CONFIG), F_OK) != -1))
+	const char *config_path = obs_module_config_path(CONFIG);
+	if (!os_file_exists(config_path))
 		obs_data_save_json(
 			obs_data_create(),
-			obs_module_config_path(
-				CONFIG)); // in case the file does not exist, create a empty json file
+			config_path); // in case the file does not exist, create a empty json file
 	obsSettingsData =
-		obs_data_create_from_json_file(obs_module_config_path(CONFIG));
+		obs_data_create_from_json_file(config_path);
 
 	obs_data_set_int(sceneCollectionData, "displayDuration",
 			 displayDuration);

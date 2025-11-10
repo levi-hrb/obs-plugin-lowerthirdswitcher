@@ -34,7 +34,7 @@
 #include <obs-module.h>
 
 #include <plugin-support.h>
-#include "ui_lowerthirdswitcher.h"
+#include "ui_LowerThirdSwitcher.h"
 
 #define CONFIG "config.json"
 
