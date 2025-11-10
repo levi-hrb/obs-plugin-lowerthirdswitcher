@@ -6,13 +6,12 @@ set(CMAKE_XCODE_GENERATE_SCHEME TRUE)
 
 # Use a compiler wrapper to enable ccache in Xcode projects
 if(ENABLE_CCACHE AND CCACHE_PROGRAM)
-  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/macos/resources/ccache-launcher-c.in"
-                 ccache-launcher-c)
-  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/macos/resources/ccache-launcher-cxx.in"
-                 ccache-launcher-cxx)
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/macos/resources/ccache-launcher-c.in" ccache-launcher-c)
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/macos/resources/ccache-launcher-cxx.in" ccache-launcher-cxx)
 
-  execute_process(COMMAND chmod a+rx "${CMAKE_CURRENT_BINARY_DIR}/ccache-launcher-c"
-                          "${CMAKE_CURRENT_BINARY_DIR}/ccache-launcher-cxx")
+  execute_process(
+    COMMAND chmod a+rx "${CMAKE_CURRENT_BINARY_DIR}/ccache-launcher-c" "${CMAKE_CURRENT_BINARY_DIR}/ccache-launcher-cxx"
+  )
   set(CMAKE_XCODE_ATTRIBUTE_CC "${CMAKE_CURRENT_BINARY_DIR}/ccache-launcher-c")
   set(CMAKE_XCODE_ATTRIBUTE_CXX "${CMAKE_CURRENT_BINARY_DIR}/ccache-launcher-cxx")
   set(CMAKE_XCODE_ATTRIBUTE_LD "${CMAKE_C_COMPILER}")
@@ -49,20 +48,18 @@ set(CMAKE_XCODE_GENERATE_TOP_LEVEL_PROJECT_ONLY TRUE)
 # Add all libraries to project link phase (lets Xcode handle linking)
 set(CMAKE_XCODE_LINK_BUILD_PHASE_MODE KNOWN_LOCATION)
 
-# Enable codesigning with secure timestamp when not in Debug configuration (required for
-# Notarization)
+# Enable codesigning with secure timestamp when not in Debug configuration (required for Notarization)
 set(CMAKE_XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS[variant=Release] "--timestamp")
 set(CMAKE_XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS[variant=RelWithDebInfo] "--timestamp")
 set(CMAKE_XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS[variant=MinSizeRel] "--timestamp")
 
-# Enable codesigning with hardened runtime option when not in Debug configuration (required for
-# Notarization)
+# Enable codesigning with hardened runtime option when not in Debug configuration (required for Notarization)
 set(CMAKE_XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME[variant=Release] YES)
 set(CMAKE_XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME[variant=RelWithDebInfo] YES)
 set(CMAKE_XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME[variant=MinSizeRel] YES)
 
-# Disable injection of Xcode's base entitlements used for debugging when not in Debug configuration
-# (required for Notarization)
+# Disable injection of Xcode's base entitlements used for debugging when not in Debug configuration (required for
+# Notarization)
 set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_INJECT_BASE_ENTITLEMENTS[variant=Release] NO)
 set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_INJECT_BASE_ENTITLEMENTS[variant=RelWithDebInfo] NO)
 set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_INJECT_BASE_ENTITLEMENTS[variant=MinSizeRel] NO)
@@ -72,8 +69,8 @@ set(CMAKE_XCODE_ATTRIBUTE_SWIFT_VERSION 5.0)
 
 # Use DWARF with separate dSYM files when in Release or MinSizeRel configuration.
 #
-# * Currently overruled by CMake's Xcode generator, requires adding '-g' flag to raw compiler
-#   command line for desired output configuration. Report to KitWare.
+# * Currently overruled by CMake's Xcode generator, requires adding '-g' flag to raw compiler command line for desired
+#   output configuration. Report to KitWare.
 #
 set(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT[variant=Debug] dwarf)
 set(CMAKE_XCODE_ATTRIBUTE_DEBUG_INFORMATION_FORMAT[variant=RelWithDebInfo] dwarf)
@@ -102,9 +99,8 @@ set(CMAKE_XCODE_ATTRIBUTE_GCC_STRICT_ALIASING NO)
 
 # Set C++ language default to c17
 #
-# * CMake explicitly sets the version via compiler flag when transitive dependencies require
-#   specific compiler feature set, resulting in the flag being added twice. Report to KitWare as a
-#   feature request for Xcode generator
+# * CMake explicitly sets the version via compiler flag when transitive dependencies require specific compiler feature
+#   set, resulting in the flag being added twice. Report to KitWare as a feature request for Xcode generator
 # * See also: https://gitlab.kitware.com/cmake/cmake/-/issues/17183
 #
 # set(CMAKE_XCODE_ATTRIBUTE_GCC_C_LANGUAGE_STANDARD c17)
