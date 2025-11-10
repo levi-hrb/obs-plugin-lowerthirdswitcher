@@ -34,14 +34,13 @@
 #include <obs.hpp>
 #include <obs-frontend-api.h>
 #include <obs-module.h>
-#include <obs-websocket-api.h>
 
-#include "plugin-macros.generated.h"
+#include <plugin-support.h>
 #include "ui_lowerthirdswitcher.h"
 
 #define CONFIG "config.json"
 
-class LowerthirdswitcherDockWidget : public QDockWidget {
+class LowerthirdswitcherDockWidget : public QWidget {
 	Q_OBJECT
 public:
 	explicit LowerthirdswitcherDockWidget(QWidget *parent = nullptr);

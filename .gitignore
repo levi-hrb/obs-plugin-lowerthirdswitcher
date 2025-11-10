@@ -1,13 +1,72 @@
-*~
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Build directories
 /build/
 /build_*/
 /release/
 /installer/Output/
+/.deps/
 
-.vscode
-.idea
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.code-workspace
 
-# ignore generated files
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+_deps/
+
+# Generated files
 *.generated.*
 **/.Brewfile.lock.json
+
+# Backup files
+*.old
+*.bak
+*.backup
+
+# Compiled Object files
+*.o
+*.obj
+*.lo
+*.slo
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled Static libraries
+*.a
+*.lib
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# Qt
+*.autosave
+*_autogen/
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
