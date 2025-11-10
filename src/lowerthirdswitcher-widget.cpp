@@ -108,131 +108,175 @@ void LowerthirdswitcherDockWidget::nextItem()
 		activeItem; // redeclared, because activeItem will be changed while other thread still use runningActiveItem
 	obs_source_t *groupFolderSource = obs_get_source_by_name(
 		selectedGroupFolderSource.toStdString().c_str());
+
+	if (groupFolderSource == NULL) {
+		return;
+	}
+
 	if (groupFolderSource != NULL) {
 		obs_scene_t *scene = obs_get_scene_by_name(
 			selectedScene.toStdString().c_str());
+
+		if (scene == NULL) {
+			obs_source_release(groupFolderSource);
+			return;
+		}
+
 		obs_sceneitem_t *sceneItem = obs_scene_find_source(
 			scene, selectedGroupFolderSource.toStdString().c_str());
-		obs_sceneitem_set_visible(sceneItem, true);
 
-		obs_source_t *mainTextSource = obs_get_source_by_name(
-			selectedMainTextSource.toStdString().c_str());
-		if (mainTextSource != NULL &&
-		    (int)(lowerthirditems.size()) > runningActiveItem) {
-			obs_data_t *sourceSettings =
-				obs_source_get_settings(mainTextSource);
-			obs_data_set_string(sourceSettings, "text",
-					    lowerthirditems[runningActiveItem]
-						    .mainText.toStdString()
-						    .c_str());
-			obs_source_update(mainTextSource, sourceSettings);
-			obs_data_release(sourceSettings);
-		}
-		obs_source_release(mainTextSource);
+		if (sceneItem) {
+			obs_sceneitem_addref(sceneItem);
+			obs_sceneitem_set_visible(sceneItem, true);
 
-		obs_source_t *secondaryTextSource = obs_get_source_by_name(
-			selectedSecondaryTextSource.toStdString().c_str());
-		if (secondaryTextSource != NULL &&
-		    (int)(lowerthirditems.size()) > runningActiveItem) {
-			obs_data_t *sourceSettings =
-				obs_source_get_settings(secondaryTextSource);
-			obs_data_set_string(sourceSettings, "text",
-					    lowerthirditems[runningActiveItem]
-						    .secondaryText.toStdString()
-						    .c_str());
-			obs_source_update(secondaryTextSource, sourceSettings);
-			obs_data_release(sourceSettings);
-		}
-		obs_source_release(secondaryTextSource);
+			obs_source_t *mainTextSource = obs_get_source_by_name(
+				selectedMainTextSource.toStdString().c_str());
+			if (mainTextSource != NULL &&
+			    (int)(lowerthirditems.size()) > runningActiveItem) {
+				obs_data_t *sourceSettings =
+					obs_source_get_settings(mainTextSource);
+				obs_data_set_string(
+					sourceSettings, "text",
+					lowerthirditems[runningActiveItem]
+						.mainText.toStdString()
+						.c_str());
+				obs_source_update(mainTextSource,
+						  sourceSettings);
+				obs_data_release(sourceSettings);
+			}
+			obs_source_release(mainTextSource);
 
-		std::thread t{[=]() {
-			try {
-				std::this_thread::sleep_for(
-					std::chrono::milliseconds(
-						displayDuration));
+			obs_source_t *secondaryTextSource =
+				obs_get_source_by_name(
+					selectedSecondaryTextSource
+						.toStdString()
+						.c_str());
+			if (secondaryTextSource != NULL &&
+			    (int)(lowerthirditems.size()) > runningActiveItem) {
+				obs_data_t *sourceSettings =
+					obs_source_get_settings(
+						secondaryTextSource);
+				obs_data_set_string(
+					sourceSettings, "text",
+					lowerthirditems[runningActiveItem]
+						.secondaryText.toStdString()
+						.c_str());
+				obs_source_update(secondaryTextSource,
+						  sourceSettings);
+				obs_data_release(sourceSettings);
+			}
+			obs_source_release(secondaryTextSource);
 
-				if (scene) {
-					obs_sceneitem_t *sceneItem =
-						obs_scene_find_source(
-							scene,
-							selectedGroupFolderSource
-								.toStdString()
-								.c_str());
-					if (sceneItem)
+			// Only create hide thread if displayDuration > 0
+			if (displayDuration > 0) {
+				std::thread t{[sceneItem]() {
+					try {
+						std::this_thread::sleep_for(
+							std::chrono::milliseconds(
+								displayDuration));
+
 						obs_sceneitem_set_visible(
 							sceneItem, false);
-				}
-			} catch (...) {
+						obs_sceneitem_release(
+							sceneItem);
+					} catch (...) {
+						// Clean up in case of exception
+						if (sceneItem)
+							obs_sceneitem_release(
+								sceneItem);
+					}
+				}};
+				t.detach();
+			} else {
+				// If displayDuration is 0, release immediately without hiding
+				obs_sceneitem_release(sceneItem);
 			}
-		}};
-		t.detach();
 
-		std::thread tflash{[=]() {
-			int flashDuration = 500;
-			int duration =
-				((abs(displayDuration) + flashDuration - 1) /
-				 flashDuration) *
-				((flashDuration * displayDuration) /
-				 abs(displayDuration)); // round up to multiple of flashDuration
-
-			// it is important to check with [if (ui->itemsListWidget->item(runningActiveItem))] to ensure, that the item has not been changed in the meantime
-			for (int i = 0; i < duration / flashDuration / 2; i++) {
-				if (ui->itemsListWidget->item(
-					    runningActiveItem))
-					ui->itemsListWidget
-						->item(runningActiveItem)
-						->setIcon(QIcon(
-							":/red-icon.png"));
-				ui->nextButton->setIcon(
-					QIcon(":/red-icon.png"));
-				std::this_thread::sleep_for(
-					std::chrono::milliseconds(
-						flashDuration));
-				if (ui->itemsListWidget->item(
-					    runningActiveItem))
-					ui->itemsListWidget
-						->item(runningActiveItem)
-						->setIcon(QIcon(
-							":/red-flash-icon.png"));
-				ui->nextButton->setIcon(
-					QIcon(":/red-flash-icon.png"));
-				std::this_thread::sleep_for(
-					std::chrono::milliseconds(
-						flashDuration));
-			}
 			QPixmap px(8, 8);
 			px.fill(Qt::transparent);
-			if (ui->itemsListWidget->item(runningActiveItem))
-				ui->itemsListWidget->item(runningActiveItem)
-					->setIcon(QIcon(px));
-			ui->nextButton->setIcon(
-				QIcon(":/red-green-transition-icon.png"));
-			if (ui->itemsListWidget->item(activeItem)) {
-				ui->itemsListWidget->item(activeItem)
-					->setIcon(QIcon(
-						":/green-icon.png")); // in case the item has been manually set back to active
+			std::thread tflash{[=]() {
+				// If displayDuration is 0 (infinite), skip the flashing animation
+				if (displayDuration == 0) {
+					// Just show green icon immediately for the active item
+					if (ui->itemsListWidget->item(
+						    runningActiveItem)) {
+						ui->itemsListWidget
+							->item(runningActiveItem)
+							->setIcon(QIcon(px));
+					}
+					return;
+				}
+
+				int flashDuration = 500;
+				int duration =
+					((abs(displayDuration) + flashDuration -
+					  1) /
+					 flashDuration) *
+					((flashDuration * displayDuration) /
+					 abs(displayDuration)); // round up to multiple of flashDuration
+
+				// it is important to check with [if (ui->itemsListWidget->item(runningActiveItem))] to ensure, that the item has not been changed in the meantime
+				for (int i = 0;
+				     i < duration / flashDuration / 2; i++) {
+					if (ui->itemsListWidget->item(
+						    runningActiveItem))
+						ui->itemsListWidget
+							->item(runningActiveItem)
+							->setIcon(QIcon(
+								":/red-icon.png"));
+					ui->nextButton->setIcon(
+						QIcon(":/red-icon.png"));
+					std::this_thread::sleep_for(
+						std::chrono::milliseconds(
+							flashDuration));
+					if (ui->itemsListWidget->item(
+						    runningActiveItem))
+						ui->itemsListWidget
+							->item(runningActiveItem)
+							->setIcon(QIcon(
+								":/red-flash-icon.png"));
+					ui->nextButton->setIcon(
+						QIcon(":/red-flash-icon.png"));
+					std::this_thread::sleep_for(
+						std::chrono::milliseconds(
+							flashDuration));
+				}
+				if (ui->itemsListWidget->item(
+					    runningActiveItem))
+					ui->itemsListWidget
+						->item(runningActiveItem)
+						->setIcon(QIcon(px));
+				ui->nextButton->setIcon(QIcon(
+					":/red-green-transition-icon.png"));
+				if (ui->itemsListWidget->item(activeItem)) {
+					ui->itemsListWidget->item(activeItem)
+						->setIcon(QIcon(
+							":/green-icon.png")); // in case the item has been manually set back to active
+				}
+			}};
+			tflash.detach();
+
+			// !!! STEP TO NEXT ITEM !!! //
+			if ((int)(lowerthirditems.size()) > activeItem + 1) {
+				activeItem =
+					activeItem +
+					1; // if new index exists, apply new index
+			} else if ((int)(lowerthirditems.size()) > 0) {
+				activeItem =
+					0; // if end is reached, jump back to start
 			}
-		}};
-		tflash.detach();
+			try {
+				QListWidgetItem *item =
+					ui->itemsListWidget->item(activeItem);
+				if (item)
+					item->setIcon(
+						QIcon(":/green-icon.png"));
+			} catch (...) {
+			}
+		}
 
 		obs_source_release(groupFolderSource);
 		obs_scene_release(scene);
-
-		// !!! STEP TO NEXT ITEM !!! //
-
-		if ((int)(lowerthirditems.size()) > activeItem + 1) {
-			activeItem = activeItem +
-				     1; // if new index exists, apply new index
-		} else if ((int)(lowerthirditems.size()) > 0) {
-			activeItem = 0; // if end is reached, jump back to start
-		}
-		try {
-			QListWidgetItem *item =
-				ui->itemsListWidget->item(activeItem);
-			if (item)
-				item->setIcon(QIcon(":/green-icon.png"));
-		} catch (...) {
-		}
 	}
 }
 

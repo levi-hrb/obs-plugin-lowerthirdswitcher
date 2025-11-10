@@ -17,7 +17,7 @@ Create an OBS folder that includes a text source for the main text (e.g. names) 
 
 <img width="200" alt="Sources Screenshot" src="https://github.com/levi-hrb/obs-plugin-lowerthirdswitcher/assets/65330078/c9eed82a-a017-45ae-984d-ec85eaa7f4ea">
 
-In the OBS Docks menu, the "Lower Third Switcher" dock can be enabled. In the settings tab the scene, folder source, main text source and secondary source can be selected. The "Display Time" defines how long the lower third will be visible.
+In the OBS Docks menu, the "Lower Third Switcher" dock can be enabled. In the settings tab the scene, folder source, main text source and secondary source can be selected. The "Display Time" defines how long the lower third will be visible. If the "Display Time" is set to 0, the lower third gets triggered and becomes visible, but never hides.
 
 <img width="300" alt="Settings Screenshot" src="https://github.com/levi-hrb/obs-plugin-lowerthirdswitcher/assets/65330078/552ca258-08f7-4ab0-b3b5-22a0a67c2ca1">
 
