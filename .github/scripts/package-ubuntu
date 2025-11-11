@@ -50,7 +50,7 @@ package() {
 
   local -i debug=0
   local -i verbosity=1
-  local -r _version='2.0.0'
+  local -r _version='2.2.1'
   local -r -a _valid_targets=(
     ubuntu-x86_64
   )

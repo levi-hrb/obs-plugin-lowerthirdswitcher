@@ -211,7 +211,7 @@ run_format() {
   local -i fail_on_error=0
   local -i check_only=0
   local -i verbosity=1
-  local -r _version='2.0.0'
+  local -r _version='2.2.1'
 
   fpath=("${SCRIPT_HOME}/.functions" ${fpath})
   autoload -Uz log_info log_error log_output set_loglevel log_status log_warning
