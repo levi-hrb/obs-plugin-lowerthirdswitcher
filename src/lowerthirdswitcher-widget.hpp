@@ -67,6 +67,13 @@ private:
 	static void LoadSavedSettings(Ui::LowerThirdSwitcher *ui,
 				      LowerthirdswitcherDockWidget *context);
 
+	// Helper functions for Studio Mode operations
+	bool IsProgramSceneSelected();
+	void SetPreviewToSelectedScene();
+	void DisableSwapScenesMode(bool &wasEnabled);
+	void RestoreSwapScenesMode(bool wasEnabled);
+	void TriggerTransitionWithSwapDisabled();
+
 private slots:
 	void ConnectObsSignalHandlers();
 	void DisonnectObsSignalHandlers();

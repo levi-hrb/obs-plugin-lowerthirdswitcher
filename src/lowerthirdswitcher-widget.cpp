@@ -102,10 +102,77 @@ void LowerthirdswitcherDockWidget::displayTimeValueChanged(int newTime)
 	displayDuration = newTime;
 }
 
+// Helper function to check if program scene matches selected scene
+bool LowerthirdswitcherDockWidget::IsProgramSceneSelected()
+{
+	if (!obs_frontend_preview_program_mode_active()) {
+		return true; // In normal mode, always proceed
+	}
+
+	obs_source_t *programScene = obs_frontend_get_current_scene();
+	const char *programName =
+		programScene ? obs_source_get_name(programScene) : "";
+	bool matches =
+		(strcmp(programName, selectedScene.toStdString().c_str()) == 0);
+	obs_source_release(programScene);
+
+	return matches;
+}
+
+// Helper function to set preview to selected scene
+void LowerthirdswitcherDockWidget::SetPreviewToSelectedScene()
+{
+	obs_source_t *selectedSceneSource =
+		obs_get_source_by_name(selectedScene.toStdString().c_str());
+	if (selectedSceneSource) {
+		obs_frontend_set_current_preview_scene(selectedSceneSource);
+		obs_source_release(selectedSceneSource);
+	}
+}
+
+// Helper function to temporarily disable swap scenes mode
+void LowerthirdswitcherDockWidget::DisableSwapScenesMode(bool &wasEnabled)
+{
+	config_t *config = obs_frontend_get_profile_config();
+	wasEnabled = config_get_bool(config, "BasicWindow", "SwapScenesMode");
+
+	if (wasEnabled) {
+		config_set_bool(config, "BasicWindow", "SwapScenesMode", false);
+	}
+}
+
+// Helper function to restore swap scenes mode
+void LowerthirdswitcherDockWidget::RestoreSwapScenesMode(bool wasEnabled)
+{
+	if (wasEnabled) {
+		config_t *config = obs_frontend_get_profile_config();
+		config_set_bool(config, "BasicWindow", "SwapScenesMode", true);
+	}
+}
+
+// Helper function to trigger transition with swap scenes temporarily disabled
+void LowerthirdswitcherDockWidget::TriggerTransitionWithSwapDisabled()
+{
+	bool swapWasEnabled;
+	DisableSwapScenesMode(swapWasEnabled);
+	obs_frontend_preview_program_trigger_transition();
+	RestoreSwapScenesMode(swapWasEnabled);
+}
+
 void LowerthirdswitcherDockWidget::nextItem()
 {
-	int runningActiveItem =
-		activeItem; // redeclared, because activeItem will be changed while other thread still use runningActiveItem
+	int runningActiveItem = activeItem;
+
+	// Check if program scene matches selected scene (in Studio Mode)
+	if (!IsProgramSceneSelected()) {
+		return;
+	}
+
+	// If in Studio Mode, ensure preview is on the selected scene
+	if (obs_frontend_preview_program_mode_active()) {
+		SetPreviewToSelectedScene();
+	}
+
 	obs_source_t *groupFolderSource = obs_get_source_by_name(
 		selectedGroupFolderSource.toStdString().c_str());
 
@@ -113,173 +180,236 @@ void LowerthirdswitcherDockWidget::nextItem()
 		return;
 	}
 
-	if (groupFolderSource != NULL) {
-		obs_scene_t *scene = obs_get_scene_by_name(
-			selectedScene.toStdString().c_str());
+	// Get the selected scene from settings
+	obs_source_t *sceneSource =
+		obs_get_source_by_name(selectedScene.toStdString().c_str());
 
-		if (scene == NULL) {
-			obs_source_release(groupFolderSource);
-			return;
+	if (sceneSource == NULL) {
+		obs_source_release(groupFolderSource);
+		return;
+	}
+
+	obs_scene_t *scene = obs_scene_from_source(sceneSource);
+
+	if (scene == NULL) {
+		obs_source_release(sceneSource);
+		obs_source_release(groupFolderSource);
+		return;
+	}
+
+	obs_sceneitem_t *sceneItem = obs_scene_find_source(
+		scene, selectedGroupFolderSource.toStdString().c_str());
+
+	if (sceneItem) {
+		obs_sceneitem_addref(sceneItem);
+		obs_sceneitem_set_visible(sceneItem, true);
+
+		// If in Studio Mode, trigger transition to show the change in program
+		if (obs_frontend_preview_program_mode_active()) {
+			TriggerTransitionWithSwapDisabled();
 		}
 
-		obs_sceneitem_t *sceneItem = obs_scene_find_source(
-			scene, selectedGroupFolderSource.toStdString().c_str());
+		obs_source_t *mainTextSource = obs_get_source_by_name(
+			selectedMainTextSource.toStdString().c_str());
+		if (mainTextSource != NULL &&
+		    (int)(lowerthirditems.size()) > runningActiveItem) {
+			obs_data_t *sourceSettings =
+				obs_source_get_settings(mainTextSource);
+			obs_data_set_string(sourceSettings, "text",
+					    lowerthirditems[runningActiveItem]
+						    .mainText.toStdString()
+						    .c_str());
+			obs_source_update(mainTextSource, sourceSettings);
+			obs_data_release(sourceSettings);
+		}
+		obs_source_release(mainTextSource);
 
-		if (sceneItem) {
-			obs_sceneitem_addref(sceneItem);
-			obs_sceneitem_set_visible(sceneItem, true);
+		obs_source_t *secondaryTextSource = obs_get_source_by_name(
+			selectedSecondaryTextSource.toStdString().c_str());
+		if (secondaryTextSource != NULL &&
+		    (int)(lowerthirditems.size()) > runningActiveItem) {
+			obs_data_t *sourceSettings =
+				obs_source_get_settings(secondaryTextSource);
+			obs_data_set_string(sourceSettings, "text",
+					    lowerthirditems[runningActiveItem]
+						    .secondaryText.toStdString()
+						    .c_str());
+			obs_source_update(secondaryTextSource, sourceSettings);
+			obs_data_release(sourceSettings);
+		}
+		obs_source_release(secondaryTextSource);
 
-			obs_source_t *mainTextSource = obs_get_source_by_name(
-				selectedMainTextSource.toStdString().c_str());
-			if (mainTextSource != NULL &&
-			    (int)(lowerthirditems.size()) > runningActiveItem) {
-				obs_data_t *sourceSettings =
-					obs_source_get_settings(mainTextSource);
-				obs_data_set_string(
-					sourceSettings, "text",
-					lowerthirditems[runningActiveItem]
-						.mainText.toStdString()
-						.c_str());
-				obs_source_update(mainTextSource,
-						  sourceSettings);
-				obs_data_release(sourceSettings);
-			}
-			obs_source_release(mainTextSource);
+		// Capture scene name for the hide thread to verify scenes still match
+		std::string currentSceneName = selectedScene.toStdString();
 
-			obs_source_t *secondaryTextSource =
-				obs_get_source_by_name(
-					selectedSecondaryTextSource
-						.toStdString()
-						.c_str());
-			if (secondaryTextSource != NULL &&
-			    (int)(lowerthirditems.size()) > runningActiveItem) {
-				obs_data_t *sourceSettings =
-					obs_source_get_settings(
-						secondaryTextSource);
-				obs_data_set_string(
-					sourceSettings, "text",
-					lowerthirditems[runningActiveItem]
-						.secondaryText.toStdString()
-						.c_str());
-				obs_source_update(secondaryTextSource,
-						  sourceSettings);
-				obs_data_release(sourceSettings);
-			}
-			obs_source_release(secondaryTextSource);
+		// Only create hide thread if displayDuration > 0
+		if (displayDuration > 0) {
+			std::thread t{[sceneItem, currentSceneName]() {
+				try {
+					std::this_thread::sleep_for(
+						std::chrono::milliseconds(
+							displayDuration));
 
-			// Only create hide thread if displayDuration > 0
-			if (displayDuration > 0) {
-				std::thread t{[sceneItem]() {
-					try {
-						std::this_thread::sleep_for(
-							std::chrono::milliseconds(
-								displayDuration));
+					obs_sceneitem_set_visible(sceneItem,
+								  false);
 
-						obs_sceneitem_set_visible(
-							sceneItem, false);
+					// If in Studio Mode, trigger transition to hide the change in program
+					if (obs_frontend_preview_program_mode_active()) {
+						// Check if the program scene is still the same as our selected scene
+						obs_source_t *programScene =
+							obs_frontend_get_current_scene();
+						const char *programName =
+							programScene
+								? obs_source_get_name(
+									  programScene)
+								: "";
+
+						bool programMatchesSelected =
+							(strcmp(programName,
+								currentSceneName
+									.c_str()) ==
+							 0);
+
+						obs_source_release(
+							programScene);
+
+						// Only trigger transition if live program scene hasn't changed
+						if (programMatchesSelected) {
+							// Set preview back to the selected scene before transitioning
+							obs_source_t *selectedSceneSource =
+								obs_get_source_by_name(
+									currentSceneName
+										.c_str());
+							if (selectedSceneSource) {
+								obs_frontend_set_current_preview_scene(
+									selectedSceneSource);
+								obs_source_release(
+									selectedSceneSource);
+							}
+
+							// Save the current swap scenes setting
+							config_t *config =
+								obs_frontend_get_profile_config();
+							bool swapScenesEnabled = config_get_bool(
+								config,
+								"BasicWindow",
+								"SwapScenesMode");
+
+							// Temporarily disable swap scenes
+							if (swapScenesEnabled) {
+								config_set_bool(
+									config,
+									"BasicWindow",
+									"SwapScenesMode",
+									false);
+							}
+
+							obs_frontend_preview_program_trigger_transition();
+
+							// Restore swap scenes setting
+							if (swapScenesEnabled) {
+								config_set_bool(
+									config,
+									"BasicWindow",
+									"SwapScenesMode",
+									true);
+							}
+						}
+					}
+
+					obs_sceneitem_release(sceneItem);
+				} catch (...) {
+					// Clean up in case of exception
+					if (sceneItem)
 						obs_sceneitem_release(
 							sceneItem);
-					} catch (...) {
-						// Clean up in case of exception
-						if (sceneItem)
-							obs_sceneitem_release(
-								sceneItem);
-					}
-				}};
-				t.detach();
-			} else {
-				// If displayDuration is 0, release immediately without hiding
-				obs_sceneitem_release(sceneItem);
+				}
+			}};
+			t.detach();
+		} else {
+			// If displayDuration is 0, release immediately without hiding
+			obs_sceneitem_release(sceneItem);
+		}
+
+		QPixmap px(8, 8);
+		px.fill(Qt::transparent);
+		std::thread tflash{[=]() {
+			// If displayDuration is 0 (infinite), skip the flashing animation
+			if (displayDuration == 0) {
+				// Just show green icon immediately for the active item
+				if (ui->itemsListWidget->item(
+					    runningActiveItem)) {
+					ui->itemsListWidget
+						->item(runningActiveItem)
+						->setIcon(QIcon(px));
+				}
+				return;
 			}
 
-			QPixmap px(8, 8);
-			px.fill(Qt::transparent);
-			std::thread tflash{[=]() {
-				// If displayDuration is 0 (infinite), skip the flashing animation
-				if (displayDuration == 0) {
-					// Just show green icon immediately for the active item
-					if (ui->itemsListWidget->item(
-						    runningActiveItem)) {
-						ui->itemsListWidget
-							->item(runningActiveItem)
-							->setIcon(QIcon(px));
-					}
-					return;
-				}
+			int flashDuration = 500;
+			int duration =
+				((abs(displayDuration) + flashDuration - 1) /
+				 flashDuration) *
+				((flashDuration * displayDuration) /
+				 abs(displayDuration)); // round up to multiple of flashDuration
 
-				int flashDuration = 500;
-				int duration =
-					((abs(displayDuration) + flashDuration -
-					  1) /
-					 flashDuration) *
-					((flashDuration * displayDuration) /
-					 abs(displayDuration)); // round up to multiple of flashDuration
-
-				// it is important to check with [if (ui->itemsListWidget->item(runningActiveItem))] to ensure, that the item has not been changed in the meantime
-				for (int i = 0;
-				     i < duration / flashDuration / 2; i++) {
-					if (ui->itemsListWidget->item(
-						    runningActiveItem))
-						ui->itemsListWidget
-							->item(runningActiveItem)
-							->setIcon(QIcon(
-								":/red-icon.png"));
-					ui->nextButton->setIcon(
-						QIcon(":/red-icon.png"));
-					std::this_thread::sleep_for(
-						std::chrono::milliseconds(
-							flashDuration));
-					if (ui->itemsListWidget->item(
-						    runningActiveItem))
-						ui->itemsListWidget
-							->item(runningActiveItem)
-							->setIcon(QIcon(
-								":/red-flash-icon.png"));
-					ui->nextButton->setIcon(
-						QIcon(":/red-flash-icon.png"));
-					std::this_thread::sleep_for(
-						std::chrono::milliseconds(
-							flashDuration));
-				}
+			// it is important to check with [if (ui->itemsListWidget->item(runningActiveItem))] to ensure, that the item has not been changed in the meantime
+			for (int i = 0; i < duration / flashDuration / 2; i++) {
 				if (ui->itemsListWidget->item(
 					    runningActiveItem))
 					ui->itemsListWidget
 						->item(runningActiveItem)
-						->setIcon(QIcon(px));
-				ui->nextButton->setIcon(QIcon(
-					":/red-green-transition-icon.png"));
-				if (ui->itemsListWidget->item(activeItem)) {
-					ui->itemsListWidget->item(activeItem)
 						->setIcon(QIcon(
-							":/green-icon.png")); // in case the item has been manually set back to active
-				}
-			}};
-			tflash.detach();
+							":/red-icon.png"));
+				ui->nextButton->setIcon(
+					QIcon(":/red-icon.png"));
+				std::this_thread::sleep_for(
+					std::chrono::milliseconds(
+						flashDuration));
+				if (ui->itemsListWidget->item(
+					    runningActiveItem))
+					ui->itemsListWidget
+						->item(runningActiveItem)
+						->setIcon(QIcon(
+							":/red-flash-icon.png"));
+				ui->nextButton->setIcon(
+					QIcon(":/red-flash-icon.png"));
+				std::this_thread::sleep_for(
+					std::chrono::milliseconds(
+						flashDuration));
+			}
+			if (ui->itemsListWidget->item(runningActiveItem))
+				ui->itemsListWidget->item(runningActiveItem)
+					->setIcon(QIcon(px));
+			ui->nextButton->setIcon(
+				QIcon(":/red-green-transition-icon.png"));
+			if (ui->itemsListWidget->item(activeItem)) {
+				ui->itemsListWidget->item(activeItem)
+					->setIcon(QIcon(
+						":/green-icon.png")); // in case the item has been manually set back to active
+			}
+		}};
+		tflash.detach();
 
-			// !!! STEP TO NEXT ITEM !!! //
-			if ((int)(lowerthirditems.size()) > activeItem + 1) {
-				activeItem =
-					activeItem +
-					1; // if new index exists, apply new index
-			} else if ((int)(lowerthirditems.size()) > 0) {
-				activeItem =
-					0; // if end is reached, jump back to start
-			}
-			try {
-				QListWidgetItem *item =
-					ui->itemsListWidget->item(activeItem);
-				if (item)
-					item->setIcon(
-						QIcon(":/green-icon.png"));
-			} catch (...) {
-			}
+		// !!! STEP TO NEXT ITEM !!! //
+		if ((int)(lowerthirditems.size()) > activeItem + 1) {
+			activeItem = activeItem +
+				     1; // if new index exists, apply new index
+		} else if ((int)(lowerthirditems.size()) > 0) {
+			activeItem = 0; // if end is reached, jump back to start
 		}
-
-		obs_source_release(groupFolderSource);
-		obs_scene_release(scene);
+		try {
+			QListWidgetItem *item =
+				ui->itemsListWidget->item(activeItem);
+			if (item)
+				item->setIcon(QIcon(":/green-icon.png"));
+		} catch (...) {
+		}
 	}
-}
 
+	obs_source_release(groupFolderSource);
+	obs_source_release(sceneSource);
+}
 void LowerthirdswitcherDockWidget::RegisterHotkeys(
 	LowerthirdswitcherDockWidget *context)
 {

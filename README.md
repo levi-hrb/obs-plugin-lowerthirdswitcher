@@ -1,7 +1,7 @@
 # obs-plugin-lowerthirdswitcher
 An OBS Plugin to easily display pre-configured lower thirds.
 
-**Version 2.0** - Updated to use the latest OBS Plugin Template (2025) with support for OBS Studio 31.0+ and Qt6.
+**Version 2** - Updated to use the latest OBS Plugin Template (2025) with support for OBS Studio 31 and Qt6.
 
 <img width="1440" alt="Screenshot 2024-01-23 at 14 07 45" src="https://github.com/levi-hrb/obs-plugin-lowerthirdswitcher/assets/65330078/7302f64f-dc64-4e1f-94b1-5c18431ab069">
 
