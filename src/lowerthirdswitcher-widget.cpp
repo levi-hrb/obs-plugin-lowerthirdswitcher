@@ -73,8 +73,52 @@ void LowerthirdswitcherDockWidget::ConnectUISignalHandlers()
 	QObject::connect(ui->itemsListWidget,
 			 SIGNAL(itemPressed(QListWidgetItem *)),
 			 SLOT(itemsListWidgetItemPressed(QListWidgetItem *)));
-	QObject::connect(ui->itemsListWidget, SIGNAL(dropEvent(QDropEvent *)),
-			 SLOT(listWidgetDropEvent(QDropEvent *)));
+
+	// Enable drag & drop reordering inside the list widget
+	ui->itemsListWidget->setDragEnabled(true);
+	ui->itemsListWidget->setAcceptDrops(true);
+	ui->itemsListWidget->setDropIndicatorShown(true);
+	ui->itemsListWidget->setDefaultDropAction(Qt::MoveAction);
+	ui->itemsListWidget->setDragDropMode(QAbstractItemView::InternalMove);
+
+	// Update underlying lowerthirditems when visual rows are moved. Ensures state is consistent.
+	// Use the model's rowsMoved signal to detect reorders and rebuild the vector accordingly.
+	QObject::connect(ui->itemsListWidget->model(),
+			 &QAbstractItemModel::rowsMoved,
+			 this,
+			 [this](const QModelIndex &, int, int, const QModelIndex &,
+				int) {
+				 int count = ui->itemsListWidget->count();
+				 if (count == 0)
+					 return;
+				 std::vector<LowerthirdswitcherDockWidget::lowerthirditem>
+					 freshItems;
+				 freshItems.reserve(count);
+				 int freshActiveItem = -1;
+				 for (int i = 0; i < count; ++i) {
+					 QListWidgetItem *it =
+						 ui->itemsListWidget->item(i);
+					 if (!it)
+						 continue;
+					 int origIdx = it->data(Qt::UserRole).toInt();
+					 if (origIdx < 0 || origIdx >=
+								   (int)lowerthirditems.size())
+						 continue;
+					 freshItems.push_back(lowerthirditems[origIdx]);
+					 if (origIdx == activeItem)
+						 freshActiveItem = i;
+				 }
+				 // Update user role indices so future moves map correctly to current vector
+				 for (int i = 0; i < ui->itemsListWidget->count(); ++i) {
+					 QListWidgetItem *it =
+						 ui->itemsListWidget->item(i);
+					 if (it)
+						 it->setData(Qt::UserRole, i);
+				 }
+				 lowerthirditems = std::move(freshItems);
+				 if (freshActiveItem != -1)
+					 activeItem = freshActiveItem;
+			 });
 }
 
 void LowerthirdswitcherDockWidget::sceneChanged(QString newText)
@@ -536,13 +580,21 @@ void LowerthirdswitcherDockWidget::LoadItemsToList()
 	int currentRow = ui->itemsListWidget->currentRow();
 	ui->itemsListWidget->clear();
 
+	// populate items and set a stable id (UserRole) per item to track original index
+	int idx = 0;
 	for (std::vector<LowerthirdswitcherDockWidget::lowerthirditem>::iterator
 		     it = lowerthirditems.begin();
-	     it != lowerthirditems.end(); ++it) {
+	     it != lowerthirditems.end(); ++it, ++idx) {
 		QListWidgetItem *listItem = new QListWidgetItem(it->mainText);
 		QPixmap px(8, 8);
 		px.fill(Qt::transparent);
 		listItem->setIcon(QIcon(px));
+
+		// Allow the item to be dragged and carry its original index so we can reorder the vector later
+		listItem->setFlags(listItem->flags() | Qt::ItemIsDragEnabled |
+				   Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+		listItem->setData(Qt::UserRole, idx);
+
 		ui->itemsListWidget->addItem(listItem);
 	}
 	// check that a row was selected in the first place, and that this row has not been deleted
